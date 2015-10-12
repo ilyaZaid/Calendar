@@ -1,0 +1,87 @@
+#include "designationdialog.h"
+#include <QLabel>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QColorDialog>
+#include <QColor>
+#include <QPixmap>
+#include <QPainter>
+
+DesignationDialog::DesignationDialog(QWidget *parent) : QDialog(parent)
+{
+    QLabel *nameWindow = new QLabel(tr("Редактирование условных обозначений"));
+    QLabel *color = new QLabel(tr("Выберите цвет:"));
+    QLabel *nameDesignation = new QLabel(tr("Введите название вида мероприятий:"));
+    mColorView = new QLabel;
+
+    QPushButton *colorDialog = new QPushButton(tr("Палитра"));
+    QPushButton *okButton = new QPushButton(tr("Принять"));
+    QPushButton *concelButton = new QPushButton(tr("Отмена"));
+
+
+    connect(colorDialog,SIGNAL(clicked(bool)),this,SLOT(showColorDialog(bool)));
+    connect(okButton,SIGNAL(clicked()),this,SLOT(accept()));
+    connect(concelButton,SIGNAL(clicked()),this,SLOT(reject()));
+
+    QLineEdit*edit = new QLineEdit;
+    connect(edit,SIGNAL(textEdited(QString)),this,SLOT(endEditing(QString)));
+
+    QHBoxLayout* hLayout1 = new QHBoxLayout;
+    QHBoxLayout* hLayout2 = new QHBoxLayout;
+
+    hLayout1->addWidget(color);
+    hLayout1->addWidget(mColorView);
+    hLayout1->addWidget(colorDialog);
+
+    hLayout2->addWidget(okButton);
+    hLayout2->addWidget(concelButton);
+
+    QVBoxLayout* vLayout = new QVBoxLayout;
+
+    vLayout->addWidget(nameWindow);
+    vLayout->addLayout(hLayout1);
+    vLayout->addWidget(nameDesignation);
+    vLayout->addWidget(edit);
+    vLayout->addLayout(hLayout2);
+
+    this->setLayout(vLayout);
+
+
+}
+
+QColor DesignationDialog::colorValue() const
+{
+    return mColor;
+}
+
+QString DesignationDialog::nameType() const
+{
+    return mNameType;
+}
+
+void DesignationDialog::showColorDialog(bool)
+{
+   QColorDialog colorDialog;
+   if (colorDialog.exec() == QDialog::Accepted)
+     {
+        mColor = colorDialog.customColor(0);
+        QPixmap pixmap(16,16);
+        QPainter painter;
+        painter.begin(&pixmap);
+        painter.drawRect(0,0,16,16);
+        painter.fillRect(0,0,16,16,QBrush(QColor(mColor)));
+        painter.end();
+
+        mColorView->setPixmap(pixmap);
+        mColorView->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+
+   }
+}
+
+void DesignationDialog::endEditing(const QString & text)
+{
+mNameType = text;
+}
+
